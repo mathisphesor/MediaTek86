@@ -1,30 +1,34 @@
 ﻿using System;
 using System.Windows.Forms;
+using MediaTek86.controleur;
 
 namespace MediaTek86.vue
 {
     public class FrmAbsence : Form
     {
+        private Controleur controleur;
         private DateTimePicker dtpDebut;
         private DateTimePicker dtpFin;
         private ComboBox cboMotif;
 
-        public string DateDebut { get; private set; }
-        public string DateFin { get; private set; }
-        public string Motif { get; private set; }
+        public DateTime DateDebut { get; private set; }
+        public DateTime DateFin { get; private set; }
+        public int IdMotif { get; private set; }
 
-        public FrmAbsence()
+        public FrmAbsence(Controleur controleur)
         {
+            this.controleur = controleur;
             ConstruireInterface();
         }
 
-        public FrmAbsence(string dateDebut, string dateFin, string motif)
+        public FrmAbsence(Controleur controleur, DateTime datedebut, DateTime datefin, int idmotif)
         {
+            this.controleur = controleur;
             ConstruireInterface();
 
-            dtpDebut.Value = DateTime.Parse(dateDebut);
-            dtpFin.Value = DateTime.Parse(dateFin);
-            cboMotif.Text = motif;
+            dtpDebut.Value = datedebut;
+            dtpFin.Value = datefin;
+            cboMotif.SelectedValue = idmotif;
         }
 
         private void ConstruireInterface()
@@ -49,17 +53,16 @@ namespace MediaTek86.vue
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
 
-            cboMotif.Items.Add("vacances");
-            cboMotif.Items.Add("maladie");
-            cboMotif.Items.Add("motif familial");
-            cboMotif.Items.Add("congé parental");
+            cboMotif.DataSource = controleur.GetLesMotifs();
+            cboMotif.DisplayMember = "libelle";
+            cboMotif.ValueMember = "idmotif";
 
             Button btnValider = new Button() { Text = "Valider", Left = 80, Top = 170, Width = 100 };
             Button btnAnnuler = new Button() { Text = "Annuler", Left = 200, Top = 170, Width = 100 };
 
             btnValider.Click += (s, e) =>
             {
-                if (cboMotif.Text == "")
+                if (cboMotif.SelectedValue == null)
                 {
                     MessageBox.Show("Choisis un motif.");
                     return;
@@ -71,9 +74,9 @@ namespace MediaTek86.vue
                     return;
                 }
 
-                DateDebut = dtpDebut.Value.ToShortDateString();
-                DateFin = dtpFin.Value.ToShortDateString();
-                Motif = cboMotif.Text;
+                DateDebut = dtpDebut.Value;
+                DateFin = dtpFin.Value;
+                IdMotif = Convert.ToInt32(cboMotif.SelectedValue);
 
                 this.DialogResult = DialogResult.OK;
                 this.Close();

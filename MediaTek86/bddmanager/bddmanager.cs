@@ -5,28 +5,61 @@ namespace MediaTek86.bddmanager
 {
     public class BddManager
     {
-        private MySqlConnection connexion;
+        private readonly string chaineConnexion;
 
         public BddManager(string chaineConnexion)
         {
-            connexion = new MySqlConnection(chaineConnexion);
+            this.chaineConnexion = chaineConnexion;
         }
 
-        public DataTable ExecuteSelect(string requete)
+        public DataTable ExecuteSelect(string requete, params MySqlParameter[] parametres)
         {
             DataTable table = new DataTable();
-            MySqlDataAdapter adapter = new MySqlDataAdapter(requete, connexion);
-            adapter.Fill(table);
+
+            using (MySqlConnection connexion = new MySqlConnection(chaineConnexion))
+            {
+                connexion.Open();
+
+                using (MySqlCommand commande = new MySqlCommand(requete, connexion))
+                {
+                    commande.Parameters.AddRange(parametres);
+
+                    using (MySqlDataAdapter adapter = new MySqlDataAdapter(commande))
+                    {
+                        adapter.Fill(table);
+                    }
+                }
+            }
+
             return table;
         }
 
-        public int ExecuteNonQuery(string requete)
+        public int ExecuteNonQuery(string requete, params MySqlParameter[] parametres)
         {
-            connexion.Open();
-            MySqlCommand commande = new MySqlCommand(requete, connexion);
-            int result = commande.ExecuteNonQuery();
-            connexion.Close();
-            return result;
+            using (MySqlConnection connexion = new MySqlConnection(chaineConnexion))
+            {
+                connexion.Open();
+
+                using (MySqlCommand commande = new MySqlCommand(requete, connexion))
+                {
+                    commande.Parameters.AddRange(parametres);
+                    return commande.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public object ExecuteScalar(string requete, params MySqlParameter[] parametres)
+        {
+            using (MySqlConnection connexion = new MySqlConnection(chaineConnexion))
+            {
+                connexion.Open();
+
+                using (MySqlCommand commande = new MySqlCommand(requete, connexion))
+                {
+                    commande.Parameters.AddRange(parametres);
+                    return commande.ExecuteScalar();
+                }
+            }
         }
     }
 }

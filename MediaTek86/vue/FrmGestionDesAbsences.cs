@@ -1,15 +1,21 @@
 ﻿using System;
 using System.Windows.Forms;
+using MediaTek86.controleur;
 
 namespace MediaTek86.vue
 {
     public class FrmGestionDesAbsences : Form
     {
+        private Controleur controleur;
+        private int idpersonnel;
         private DataGridView dgvAbsences;
 
-        public FrmGestionDesAbsences()
+        public FrmGestionDesAbsences(Controleur controleur, int idpersonnel, string nomPrenom)
         {
-            this.Text = "Gestion des absences";
+            this.controleur = controleur;
+            this.idpersonnel = idpersonnel;
+
+            this.Text = "Absences de " + nomPrenom;
             this.Width = 800;
             this.Height = 550;
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -27,54 +33,63 @@ namespace MediaTek86.vue
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
-                AllowUserToAddRows = false
+                AllowUserToAddRows = false,
+                ReadOnly = true
             };
 
-            dgvAbsences.Columns.Add("dateDebut", "Date début");
-            dgvAbsences.Columns.Add("dateFin", "Date fin");
-            dgvAbsences.Columns.Add("motif", "Motif");
+            ChargerAbsences();
 
             btnAjouter.Click += (s, e) =>
             {
-                FrmAbsence frm = new FrmAbsence();
+                FrmAbsence frm = new FrmAbsence(controleur);
 
                 if (frm.ShowDialog() == DialogResult.OK)
                 {
-                    dgvAbsences.Rows.Add(frm.DateDebut, frm.DateFin, frm.Motif);
+                    controleur.AjouterAbsence(idpersonnel, frm.DateDebut, frm.DateFin, frm.IdMotif);
+                    ChargerAbsences();
                 }
             };
 
             btnModifier.Click += (s, e) =>
             {
-                if (dgvAbsences.CurrentRow == null)
-                {
-                    MessageBox.Show("Sélectionne une absence à modifier.");
-                    return;
-                }
+                if (dgvAbsences.CurrentRow == null) return;
 
-                FrmAbsence frm = new FrmAbsence(
-                    dgvAbsences.CurrentRow.Cells[0].Value.ToString(),
-                    dgvAbsences.CurrentRow.Cells[1].Value.ToString(),
-                    dgvAbsences.CurrentRow.Cells[2].Value.ToString()
-                );
+                DateTime ancienneDateDebut = Convert.ToDateTime(dgvAbsences.CurrentRow.Cells["datedebut"].Value);
+                DateTime datefin = Convert.ToDateTime(dgvAbsences.CurrentRow.Cells["datefin"].Value);
+                int idmotif = Convert.ToInt32(dgvAbsences.CurrentRow.Cells["idmotif"].Value);
+
+                FrmAbsence frm = new FrmAbsence(controleur, ancienneDateDebut, datefin, idmotif);
 
                 if (frm.ShowDialog() == DialogResult.OK)
                 {
-                    dgvAbsences.CurrentRow.Cells[0].Value = frm.DateDebut;
-                    dgvAbsences.CurrentRow.Cells[1].Value = frm.DateFin;
-                    dgvAbsences.CurrentRow.Cells[2].Value = frm.Motif;
+                    controleur.ModifierAbsence(
+                        idpersonnel,
+                        ancienneDateDebut,
+                        frm.DateDebut,
+                        frm.DateFin,
+                        frm.IdMotif
+                    );
+
+                    ChargerAbsences();
                 }
             };
 
             btnSupprimer.Click += (s, e) =>
             {
-                if (dgvAbsences.CurrentRow == null)
-                {
-                    MessageBox.Show("Sélectionne une absence à supprimer.");
-                    return;
-                }
+                if (dgvAbsences.CurrentRow == null) return;
 
-                dgvAbsences.Rows.Remove(dgvAbsences.CurrentRow);
+                DialogResult rep = MessageBox.Show(
+                    "Voulez-vous vraiment supprimer cette absence ?",
+                    "Confirmation",
+                    MessageBoxButtons.YesNo
+                );
+
+                if (rep == DialogResult.Yes)
+                {
+                    DateTime datedebut = Convert.ToDateTime(dgvAbsences.CurrentRow.Cells["datedebut"].Value);
+                    controleur.SupprimerAbsence(idpersonnel, datedebut);
+                    ChargerAbsences();
+                }
             };
 
             this.Controls.AddRange(new Control[]
@@ -84,6 +99,17 @@ namespace MediaTek86.vue
                 btnSupprimer,
                 dgvAbsences
             });
+        }
+
+        private void ChargerAbsences()
+        {
+            dgvAbsences.DataSource = controleur.GetLesAbsences(idpersonnel);
+
+            if (dgvAbsences.Columns["idpersonnel"] != null)
+                dgvAbsences.Columns["idpersonnel"].Visible = false;
+
+            if (dgvAbsences.Columns["idmotif"] != null)
+                dgvAbsences.Columns["idmotif"].Visible = false;
         }
     }
 }
