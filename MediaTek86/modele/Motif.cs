@@ -1,17 +1,19 @@
 ﻿namespace MediaTek86.modele
 {
-    /// <summary>
-    /// Représente un motif d'absence.
-    /// </summary>
     public class Motif
     {
-        public int IdMotif { get; set; }
+        public int Idmotif { get; set; }
         public string Libelle { get; set; }
 
-        public Motif(int idMotif, string libelle)
+        public Motif(int idmotif, string libelle)
         {
-            IdMotif = idMotif;
+            Idmotif = idmotif;
             Libelle = libelle;
+        }
+
+        public override string ToString()
+        {
+            return Libelle;
         }
     }
 }

@@ -2,22 +2,19 @@
 
 namespace MediaTek86.modele
 {
-    /// <summary>
-    /// Représente une absence d'un personnel.
-    /// </summary>
     public class Absence
     {
-        public Personnel Personnel { get; set; }
-        public DateTime DateDebut { get; set; }
-        public DateTime DateFin { get; set; }
-        public Motif Motif { get; set; }
+        public int Idpersonnel { get; set; }
+        public DateTime Datedebut { get; set; }
+        public DateTime Datefin { get; set; }
+        public int Idmotif { get; set; }
 
-        public Absence(Personnel personnel, DateTime dateDebut, DateTime dateFin, Motif motif)
+        public Absence(int idpersonnel, DateTime datedebut, DateTime datefin, int idmotif)
         {
-            Personnel = personnel;
-            DateDebut = dateDebut;
-            DateFin = dateFin;
-            Motif = motif;
+            Idpersonnel = idpersonnel;
+            Datedebut = datedebut;
+            Datefin = datefin;
+            Idmotif = idmotif;
         }
     }
 }

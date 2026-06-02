@@ -9,7 +9,7 @@
             "Server=localhost;" +
             "Database=mediatek86;" +
             "Uid=gestionnaire;" +
-            "Pwd=MotDePasse123!;";
+            "Pwd=M@th1sPh";
 
         /// <summary>
         /// Retourne la chaîne de connexion.
